@@ -88,7 +88,6 @@ def main() -> None:
         {"name": "Ember", "power": 84, "element": "fire"},
     ]
     spells = ["tornado", "darkness", "meteor", "fireball"]
-    print("=== Lambda Sanctum Report ===")
     print(test_function(artifact_sorter, artifacts))
     print(test_function(power_filter, mages, 80))
     print(test_function(spell_transformer, spells))
