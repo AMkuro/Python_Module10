@@ -74,8 +74,7 @@ def format_spell_reducer(spells: list[int]) -> str:
 def format_partial_enchanter(base_enchantment: Callable) -> str:
     enchanted_spells = partial_enchanter(base_enchantment)
     lines = [
-        f"{name}: {spell('Sword')}"
-        for name, spell in enchanted_spells.items()
+        f"{name}: {spell('Sword')}" for name, spell in enchanted_spells.items()
     ]
     return "\n".join(lines)
 
