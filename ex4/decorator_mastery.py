@@ -48,7 +48,7 @@ def retry_spell(max_attempts: int) -> Callable:
                             "Spell failed, retrying... "
                             f"({attempt}/{max_attempts})"
                         )
-            return "Spell casting failed after max_attempts attempts"
+            return f"Spell casting failed after {max_attempts} attempts"
 
         return wrapper
 
@@ -57,7 +57,6 @@ def retry_spell(max_attempts: int) -> Callable:
 
 class MageGuild:
     @staticmethod
-    # Isn't Crush?
     def validate_mage_name(name: str) -> bool:
         return len(name) >= 3 and all(
             ch.isalpha() or ch.isspace() for ch in name
@@ -73,16 +72,6 @@ def format_spell_timer(func: Callable) -> str:
     return f"Result: {fireball()}"
 
 
-def format_power_validator(
-    spell_name: str, powers: list[int], min_power: int
-) -> str:
-    @power_validator(min_power)
-    def cast_spell(name: str, power: int) -> str:
-        return f"Successfully cast {name} with {power} power"
-
-    return "\n".join(cast_spell(spell_name, power) for power in powers)
-
-
 def format_retry_spell(func: Callable, max_attempts: int) -> str:
     retried_spell = retry_spell(max_attempts)(func)
     return f"Retry result: {retried_spell()}"
@@ -94,9 +83,7 @@ def format_validate_mage_name(names: list[str]) -> str:
 
 def format_cast_spell(spell_name: str, powers: list[int]) -> str:
     guild = MageGuild()
-    return "\n".join(
-        guild.cast_spell(spell_name, power) for power in powers
-    )
+    return "\n".join(guild.cast_spell(spell_name, power) for power in powers)
 
 
 def format_mage_guild(
@@ -113,18 +100,13 @@ def format_mage_guild(
 def test_function(func: Callable, *args: Any) -> str:
     formatters: dict[str, Callable[..., str]] = {
         "spell_timer": format_spell_timer,
-        "power_validator": format_power_validator,
         "retry_spell": format_retry_spell,
         "validate_mage_name": format_validate_mage_name,
         "cast_spell": format_cast_spell,
         "MageGuild": format_mage_guild,
     }
-    return "\n".join(
-        [
-            f"\nTesting {func.__name__.replace('_', ' ')}...",
-            formatters[func.__name__](*args),
-        ]
-    )
+    print(f"\nTesting {func.__name__.replace('_', ' ')}...")
+    return formatters[func.__name__](*args)
 
 
 def main() -> None:
@@ -132,17 +114,11 @@ def main() -> None:
         sleep(0.1)
         return "Fireball cast!"
 
-    attempts: int = 0
-
-    def arcane_burst() -> str:
-        nonlocal attempts
-        attempts += 1
-        if attempts < 3:
-            raise RuntimeError("Spell fizzled")
-        return "Arcane burst stabilized"
+    def muggle_spelled() -> None:
+        raise RuntimeError("Spell fizzled")
 
     print(test_function(spell_timer, fireball))
-    print(test_function(retry_spell, arcane_burst, 3))
+    print(test_function(retry_spell, muggle_spelled, 3))
     print(
         test_function(
             MageGuild,
