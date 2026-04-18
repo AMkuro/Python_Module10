@@ -46,7 +46,7 @@ def retry_spell(max_attempts: int) -> Callable:
                     if attempt < max_attempts:
                         print(
                             "Spell failed, retrying... "
-                            f"({attempt}/{max_attempts})"
+                            f"(attempt {attempt}/{max_attempts})"
                         )
             return f"Spell casting failed after {max_attempts} attempts"
 

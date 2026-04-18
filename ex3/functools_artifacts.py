@@ -4,21 +4,19 @@ from typing import Any, Callable
 
 
 def spell_reducer(spells: list[int], operation: str) -> int:
-    initial: int = 1 if operation == "multiply" else 0
     operations: dict[str, Callable[[int, int], int]] = {
         "add": operator.add,
         "multiply": operator.mul,
         "max": max,
         "min": min,
     }
-    if operation == "max" or operation == "min":
-        if not spells:
-            raise ValueError(f"spells must not be empty for {operation}")
+    if not spells:
+        raise ValueError(f"spells must not be empty for {operation}")
     try:
         func = operations[operation]
     except KeyError:
         raise ValueError(f"Unsupported operation: {operation}")
-    return reduce(func, spells, initial)
+    return reduce(func, spells)
 
 
 def partial_enchanter(base_enchantment: Callable) -> dict[str, Callable]:
@@ -65,10 +63,15 @@ def format_spell_reducer(spells: list[int]) -> str:
         "min": "Min",
     }
     operations = ["add", "multiply", "max", "min"]
-    return "\n".join(
-        f"{labels[operation]}: {spell_reducer(spells, operation)}"
-        for operation in operations
-    )
+    lines: list[str] = []
+    for operation in operations:
+        try:
+            lines += [
+                f"{labels[operation]}: {spell_reducer(spells, operation)}"
+            ]
+        except ValueError as e:
+            lines += [f"{labels[operation]}: {e}"]
+    return "\n".join(lines)
 
 
 def format_partial_enchanter(base_enchantment: Callable) -> str:
