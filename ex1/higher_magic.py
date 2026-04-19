@@ -2,6 +2,9 @@ from typing import Any, Callable
 
 
 def spell_combiner(spell1: Callable, spell2: Callable) -> Callable:
+    if not callable(spell1) or not callable(spell2):
+        raise TypeError("spell1 and spell2 must be callable")
+
     def combined(*args, **kwargs):
         result1 = spell1(*args, **kwargs)
         result2 = spell2(*args, **kwargs)
@@ -18,6 +21,9 @@ def power_amplifier(base_spell: Callable, multiplier: int) -> Callable:
 
 
 def conditional_caster(condition: Callable, spell: Callable) -> Callable:
+    if not callable(condition) or not callable(spell):
+        raise TypeError("condition and spell must be callable")
+
     def caster(*args, **kwargs):
         if condition(*args, **kwargs):
             return spell(*args, **kwargs)
@@ -39,9 +45,12 @@ def spell_sequence(spells: list[Callable]) -> Callable:
 def format_spell_combiner(
     spell1: Callable, spell2: Callable, target: str
 ) -> str:
-    combined = spell_combiner(spell1, spell2)
-    combined_result = combined(target)
-    return f"Combined spell result: {', '.join(combined_result)}"
+    try:
+        combined = spell_combiner(spell1, spell2)
+        combined_result = combined(target)
+        return f"Combined spell result: {', '.join(combined_result)}"
+    except TypeError as e:
+        return f"Error: {e}"
 
 
 def format_power_ampliifier(original_power: int, multiplier: int) -> str:
@@ -51,13 +60,16 @@ def format_power_ampliifier(original_power: int, multiplier: int) -> str:
 
 
 def format_conditional_caster(condition: Callable, spell: Callable) -> str:
-    casting_magic = conditional_caster(condition, spell)
-    return "\n".join(
-        [
-            f"Condition met: {casting_magic(6)}",
-            f"Condition failed: {casting_magic(3)}",
-        ]
-    )
+    try:
+        casting_magic = conditional_caster(condition, spell)
+        return "\n".join(
+            [
+                f"Condition met: {casting_magic(6)}",
+                f"Condition failed: {casting_magic(3)}",
+            ]
+        )
+    except TypeError as e:
+        return f"Error: {e}"
 
 
 def format_spell_sequence(spells: list, target: str) -> str:

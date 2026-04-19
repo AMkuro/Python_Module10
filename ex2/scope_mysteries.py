@@ -17,6 +17,8 @@ def spell_accumulator(initial_power: int) -> Callable:
 
     def add_power(amount: int) -> int:
         nonlocal total_power
+        if not isinstance(amount, int):
+            raise TypeError(f"amount must be int, got {type(amount).__name__}")
         total_power += amount
         return total_power
 
@@ -53,7 +55,10 @@ def format_spell_accumulator(initial_power: int, amounts: list[int]) -> str:
     accumulator = spell_accumulator(initial_power)
     lines = [f"Start: {initial_power}"]
     for amount in amounts:
-        lines.append(f"After adding {amount}: {accumulator(amount)}")
+        try:
+            lines.append(f"After adding {amount}: {accumulator(amount)}")
+        except TypeError as e:
+            lines.append(f"Error: {e}")
     return "\n".join(lines)
 
 

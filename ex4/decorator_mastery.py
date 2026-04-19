@@ -1,3 +1,4 @@
+import inspect
 from functools import wraps
 from time import perf_counter, sleep
 from typing import Any, Callable
@@ -8,9 +9,11 @@ def spell_timer(func: Callable) -> Callable:
     def wrapper(*args, **kwargs) -> Any:
         print(f"Casting {func.__name__}...")
         start: float = perf_counter()
-        result = func(*args, **kwargs)
-        end: float = perf_counter()
-        print(f"Spell completed in {end - start:.3f} seconds")
+        try:
+            result = func(*args, **kwargs)
+        finally:
+            end: float = perf_counter()
+            print(f"Spell completed in {end - start:.3f} seconds")
         return result
 
     return wrapper
@@ -18,13 +21,19 @@ def spell_timer(func: Callable) -> Callable:
 
 def power_validator(min_power: int) -> Callable:
     def decorator(func: Callable) -> Callable:
+        params = list(inspect.signature(func).parameters.keys())
+        power_idx = params.index("power") if "power" in params else -1
+
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
-            power: int
             if "power" in kwargs:
                 power = kwargs["power"]
+            elif power_idx >= 0 and len(args) > power_idx:
+                power = args[power_idx]
             else:
-                power = args[2]
+                raise TypeError("Missing required argument: power")
+            if not isinstance(power, (int, float)):
+                raise TypeError(f"power must be numeric, got {type(power).__name__}")
             if power >= min_power:
                 return func(*args, **kwargs)
             return "Insufficient power for this spell"
@@ -58,6 +67,8 @@ def retry_spell(max_attempts: int) -> Callable:
 class MageGuild:
     @staticmethod
     def validate_mage_name(name: str) -> bool:
+        if not isinstance(name, str):
+            return False
         return len(name) >= 3 and all(
             ch.isalpha() or ch.isspace() for ch in name
         )
@@ -83,7 +94,13 @@ def format_validate_mage_name(names: list[str]) -> str:
 
 def format_cast_spell(spell_name: str, powers: list[int]) -> str:
     guild = MageGuild()
-    return "\n".join(guild.cast_spell(spell_name, power) for power in powers)
+    lines = []
+    for power in powers:
+        try:
+            lines.append(guild.cast_spell(spell_name, power))
+        except TypeError as e:
+            lines.append(f"Error: {e}")
+    return "\n".join(lines)
 
 
 def format_mage_guild(

@@ -1,3 +1,4 @@
+import sys
 from functools import reduce, partial, lru_cache, singledispatch
 import operator
 from typing import Any, Callable
@@ -20,6 +21,8 @@ def spell_reducer(spells: list[int], operation: str) -> int:
 
 
 def partial_enchanter(base_enchantment: Callable) -> dict[str, Callable]:
+    if not callable(base_enchantment):
+        raise TypeError("base_enchantment must be callable")
     power: int = 50
     elements: tuple[str, ...] = ("fire", "ice", "lightning")
     return {
@@ -30,8 +33,11 @@ def partial_enchanter(base_enchantment: Callable) -> dict[str, Callable]:
 
 @lru_cache(maxsize=None)
 def memoized_fibonacci(n: int) -> int:
-    if n < 2:
-        return n
+    if n <= 0:
+        return 0
+    if n == 1:
+        return 1
+    sys.setrecursionlimit(max(sys.getrecursionlimit(), n + 100))
     return memoized_fibonacci(n - 1) + memoized_fibonacci(n - 2)
 
 
@@ -75,11 +81,14 @@ def format_spell_reducer(spells: list[int]) -> str:
 
 
 def format_partial_enchanter(base_enchantment: Callable) -> str:
-    enchanted_spells = partial_enchanter(base_enchantment)
-    lines = [
-        f"{name}: {spell('Sword')}" for name, spell in enchanted_spells.items()
-    ]
-    return "\n".join(lines)
+    try:
+        enchanted_spells = partial_enchanter(base_enchantment)
+        lines = [
+            f"{name}: {spell('Sword')}" for name, spell in enchanted_spells.items()
+        ]
+        return "\n".join(lines)
+    except TypeError as e:
+        return f"Error: {e}"
 
 
 def format_memoized_fibonacci(values: list[int]) -> str:
